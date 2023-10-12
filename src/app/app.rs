@@ -1,5 +1,7 @@
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
 
+use crate::emulator::{keyboard::map_sdl_key_to_chip8_key, Chip8};
+
 use super::config::WindowConfig;
 
 pub struct App {
@@ -8,6 +10,7 @@ pub struct App {
     canvas: sdl2::render::Canvas<sdl2::video::Window>,
     event_pump: sdl2::EventPump,
     is_running: bool,
+    chip8: Chip8,
 }
 
 impl App {
@@ -28,6 +31,7 @@ impl App {
         let canvas = window.into_canvas().build().unwrap();
         let event_pump = sdl_context.event_pump().unwrap();
         let is_running = true;
+        let chip = Chip8::new();
 
         Ok(Self {
             sdl_context,
@@ -35,6 +39,7 @@ impl App {
             canvas,
             event_pump,
             is_running,
+            chip8: chip,
         })
     }
 
@@ -46,6 +51,22 @@ impl App {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => self.is_running = false,
+                Event::KeyDown {
+                    keycode: Some(keycode),
+                    ..
+                } => {
+                    if let Some(_) = map_sdl_key_to_chip8_key(keycode) {
+                        self.chip8.keyboard.key_down(keycode);
+                    }
+                }
+                Event::KeyUp {
+                    keycode: Some(keycode),
+                    ..
+                } => {
+                    if let Some(_) = map_sdl_key_to_chip8_key(keycode) {
+                        self.chip8.keyboard.key_up(keycode);
+                    }
+                }
                 _ => {}
             }
         }
