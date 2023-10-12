@@ -1,5 +1,7 @@
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
 
+use super::config::WindowConfig;
+
 pub struct App {
     sdl_context: sdl2::Sdl,
     video_subsystem: sdl2::VideoSubsystem,
@@ -13,12 +15,12 @@ impl App {
         self.is_running
     }
 
-    pub fn new(title: &str, width: u32, height: u32) -> Result<Self, String> {
+    pub fn new(config: WindowConfig) -> Result<Self, String> {
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
         let window = video_subsystem
-            .window(title, width, height)
+            .window(config.title, config.width, config.height)
             .position_centered()
             .build()
             .unwrap();
