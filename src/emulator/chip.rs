@@ -1,26 +1,39 @@
 use std::cmp::Ordering;
 
 const MEMORY_CAPACITY: usize = 4096;
+const TOTAL_DATA_REGISTERS: usize = 16;
+
+// unsigend short = u16
+// unsigend char = u8
 
 pub struct Chip8 {
     memory: [char; MEMORY_CAPACITY],
-    width: u8,
-    height: u8,
-    scale_factor: u8,
+    v: [char; TOTAL_DATA_REGISTERS], // Chip-8 has 16 general purpose 8-bit registers, usually referred to as Vx, where x is a hexadecimal digit (0 through F).
+    i: u16, // There is also a 16-bit register called I. This register is generally used to store memory addresses, so only the lowest (rightmost) 12 bits are usually used.
+    delay_timer: u8,
+    sound_timer: u8,
+    program_counter: u16,
+    stack_pointer: u8,
 }
 
 impl Chip8 {
     pub fn new() -> Chip8 {
         let memory = ['\0'; MEMORY_CAPACITY]; // Initialize memory with null characters
-        let width = 64;
-        let height = 32;
-        let scale_factor = 10;
+        let v = ['\0'; TOTAL_DATA_REGISTERS];
+        let i = 0;
+        let delay_timer = 0;
+        let sound_timer = 0;
+        let program_counter = 0;
+        let stack_pointer = 0;
 
         Chip8 {
             memory,
-            width,
-            height,
-            scale_factor,
+            v,
+            i,
+            delay_timer,
+            sound_timer,
+            program_counter,
+            stack_pointer,
         }
     }
     pub fn set_memory_addr(&mut self, index: usize, value: char) -> Result<(), &str> {
