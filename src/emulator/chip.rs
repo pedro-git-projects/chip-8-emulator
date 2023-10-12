@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 
 const MEMORY_CAPACITY: usize = 4096;
 const TOTAL_DATA_REGISTERS: usize = 16;
+const TOTAL_STACK_DEPTH: u8 = 16;
 
 // unsigend short = u16
 // unsigend char = u8
@@ -14,17 +15,19 @@ pub struct Chip8 {
     sound_timer: u8,
     program_counter: u16,
     stack_pointer: u8,
+    stack: [char; TOTAL_STACK_DEPTH as usize],
 }
 
 impl Chip8 {
     pub fn new() -> Chip8 {
-        let memory = ['\0'; MEMORY_CAPACITY]; // Initialize memory with null characters
+        let memory = ['\0'; MEMORY_CAPACITY];
         let v = ['\0'; TOTAL_DATA_REGISTERS];
         let i = 0;
         let delay_timer = 0;
         let sound_timer = 0;
         let program_counter = 0;
         let stack_pointer = 0;
+        let stack = ['\0'; TOTAL_STACK_DEPTH as usize];
 
         Chip8 {
             memory,
@@ -34,8 +37,10 @@ impl Chip8 {
             sound_timer,
             program_counter,
             stack_pointer,
+            stack,
         }
     }
+
     pub fn set_memory_addr(&mut self, index: usize, value: char) -> Result<(), &str> {
         match index.cmp(&MEMORY_CAPACITY) {
             Ordering::Less => {
@@ -49,6 +54,28 @@ impl Chip8 {
     pub fn get_memory_addr(&self, index: usize) -> Result<char, &str> {
         match index.cmp(&MEMORY_CAPACITY) {
             Ordering::Less => Ok(self.memory[index]),
+            _ => Err("memory out of bounds!"),
+        }
+    }
+
+    pub fn push_to_stack(&mut self, index: usize, value: char) -> Result<(), &str> {
+        match self.stack_pointer.cmp(&TOTAL_STACK_DEPTH) {
+            Ordering::Less => {
+                self.stack[self.stack_pointer as usize] = value;
+                self.stack_pointer += 1;
+                Ok(())
+            }
+            _ => Err("memory out of bounds!"),
+        }
+    }
+
+    pub fn pop_from_stack(&mut self) -> Result<char, &str> {
+        match self.stack_pointer.cmp(&0) {
+            Ordering::Greater => {
+                self.stack_pointer -= 1;
+                let val: char = self.stack[self.stack_pointer as usize];
+                Ok(val)
+            }
             _ => Err("memory out of bounds!"),
         }
     }
@@ -90,6 +117,44 @@ mod tests {
         let chip8 = Chip8::new();
         let index = MEMORY_CAPACITY + 1;
         let result = chip8.get_memory_addr(index);
+        assert_eq!(result, Err("memory out of bounds!"));
+    }
+
+    #[test]
+    fn test_push_to_stack_within_bounds() {
+        let mut chip8 = Chip8::new();
+        chip8.stack_pointer = 0;
+        let value = 'A';
+        let result = chip8.push_to_stack(0, value);
+        assert_eq!(result, Ok(()));
+        assert_eq!(chip8.stack[0], 'A');
+        assert_eq!(chip8.stack_pointer, 1);
+    }
+
+    #[test]
+    fn test_push_to_stack_out_of_bounds() {
+        let mut chip8 = Chip8::new();
+        chip8.stack_pointer = TOTAL_STACK_DEPTH; // Set the stack pointer to the maximum value
+        let value = 'A';
+        let result = chip8.push_to_stack(TOTAL_STACK_DEPTH as usize, value);
+        assert_eq!(result, Err("memory out of bounds!"));
+    }
+
+    #[test]
+    fn test_pop_from_stack_within_bounds() {
+        let mut chip8 = Chip8::new();
+        chip8.stack_pointer = 1;
+        chip8.stack[0] = 'A';
+        let result = chip8.pop_from_stack();
+        assert_eq!(result, Ok('A'));
+        assert_eq!(chip8.stack_pointer, 0);
+    }
+
+    #[test]
+    fn test_pop_from_stack_out_of_bounds() {
+        let mut chip8 = Chip8::new();
+        chip8.stack_pointer = 0; // Set the stack pointer to 0
+        let result = chip8.pop_from_stack();
         assert_eq!(result, Err("memory out of bounds!"));
     }
 }
