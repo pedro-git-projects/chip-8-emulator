@@ -21,8 +21,8 @@ pub struct Chip8 {
     memory: [u8; MEMORY_CAPACITY],
     v: [char; TOTAL_DATA_REGISTERS], // Chip-8 has 16 general purpose 8-bit registers, usually referred to as Vx, where x is a hexadecimal digit (0 through F).
     i: u16, // There is also a 16-bit register called I. This register is generally used to store memory addresses, so only the lowest (rightmost) 12 bits are usually used.
-    delay_timer: u8,
-    sound_timer: u8,
+    pub delay_timer: u8,
+    pub sound_timer: u8,
     program_counter: u16,
     stack_pointer: u8,
     stack: [char; TOTAL_STACK_DEPTH as usize],
