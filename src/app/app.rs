@@ -109,4 +109,10 @@ impl App {
             self.chip8.sound_timer = 0;
         }
     }
+
+    pub fn load_rom(&mut self, filename: &str) -> Result<(), String> {
+        let rom_data = std::fs::read(filename).map_err(|err| err.to_string())?;
+        self.chip8.load(&rom_data).map_err(|err| err.to_string())?;
+        Ok(())
+    }
 }
