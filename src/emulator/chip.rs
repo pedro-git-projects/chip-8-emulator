@@ -13,6 +13,7 @@ const CHIP8_DEFAULT_CHARACTER_SET: [u8; 80] = [
     0x10, 0xF0, 0xF0, 0x90, 0xF0, 0x90, 0x90, 0xE0, 0x90, 0xE0, 0x90, 0xE0, 0xF0, 0x80, 0x80, 0x80,
     0xF0, 0xE0, 0x90, 0x90, 0x90, 0xE0, 0xF0, 0x80, 0xF0, 0x80, 0xF0, 0xF0, 0x80, 0xF0, 0x80, 0x80,
 ];
+const LOAD_ADDRESS: u16 = 0x200;
 
 // unsigend short = u16
 // unsigend char = u8
@@ -100,6 +101,21 @@ impl Chip8 {
             _ => Err("memory out of bounds!"),
         }
     }
+
+    pub fn exec(opcode: u16) {}
+
+    pub fn load(&mut self, buf: &[u8]) -> Result<(), &str> {
+        let load_address = LOAD_ADDRESS as usize;
+
+        if load_address + buf.len() > MEMORY_CAPACITY {
+            return Err("program too large for memory");
+        }
+
+        self.memory[load_address..load_address + buf.len()].copy_from_slice(buf);
+        self.program_counter = LOAD_ADDRESS;
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -177,5 +193,22 @@ mod tests {
         chip8.stack_pointer = 0; // Set the stack pointer to 0
         let result = chip8.pop_from_stack();
         assert_eq!(result, Err("memory out of bounds!"));
+    }
+
+    #[test]
+    fn test_load_valid_program() {
+        let mut chip8 = Chip8::new();
+        let program: [u8; 4] = [0x12, 0x34, 0x56, 0x78];
+        let result = chip8.load(&program);
+        assert_eq!(result, Ok(()));
+        assert_eq!(chip8.program_counter, LOAD_ADDRESS);
+    }
+
+    #[test]
+    fn test_load_program_too_large() {
+        let mut chip8 = Chip8::new();
+        let program: [u8; MEMORY_CAPACITY + 1] = [0; MEMORY_CAPACITY + 1];
+        let result = chip8.load(&program);
+        assert_eq!(result, Err("program too large for memory"));
     }
 }
