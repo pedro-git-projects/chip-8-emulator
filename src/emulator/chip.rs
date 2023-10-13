@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 
 use super::keyboard::Keyboard;
+use super::screen::Screen;
 
 const MEMORY_CAPACITY: usize = 4096;
 const TOTAL_DATA_REGISTERS: usize = 16;
@@ -26,6 +27,7 @@ pub struct Chip8 {
     stack_pointer: u8,
     stack: [char; TOTAL_STACK_DEPTH as usize],
     pub keyboard: Keyboard,
+    pub screen: Screen,
 }
 
 impl Chip8 {
@@ -39,6 +41,7 @@ impl Chip8 {
         let stack_pointer = 0;
         let stack = ['\0'; TOTAL_STACK_DEPTH as usize];
         let keyboard = Keyboard::new();
+        let screen = Screen::new();
 
         let mut chip8 = Chip8 {
             memory,
@@ -50,7 +53,9 @@ impl Chip8 {
             stack_pointer,
             stack,
             keyboard,
+            screen,
         };
+
         for (i, &value) in CHIP8_DEFAULT_CHARACTER_SET.iter().enumerate() {
             chip8.memory[i] = value;
         }
