@@ -24,7 +24,7 @@ pub struct Chip8 {
     i: u16, // There is also a 16-bit register called I. This register is generally used to store memory addresses, so only the lowest (rightmost) 12 bits are usually used.
     pub delay_timer: u8,
     pub sound_timer: u8,
-    program_counter: u16,
+    pub program_counter: u16,
     stack_pointer: u8,
     stack: [char; TOTAL_STACK_DEPTH as usize],
     pub keyboard: Keyboard,
@@ -102,7 +102,15 @@ impl Chip8 {
         }
     }
 
-    pub fn exec(opcode: u16) {}
+    pub fn exec(&mut self, opcode: u16) {
+        match opcode {
+            0x00E0 => self.screen.clear(),
+            0x00EE => {
+                self.program_counter = self.pop_from_stack().unwrap() as u16;
+            }
+            _ => {}
+        }
+    }
 
     pub fn load(&mut self, buf: &[u8]) -> Result<(), &str> {
         let load_address = LOAD_ADDRESS as usize;
@@ -115,6 +123,12 @@ impl Chip8 {
         self.program_counter = LOAD_ADDRESS;
 
         Ok(())
+    }
+
+    pub fn memory_get_short(&self, index: usize) -> u16 {
+        let byte1 = self.memory[index] as u16;
+        let byte2 = self.memory[index + 1] as u16;
+        (byte1 << 8) | byte2
     }
 }
 
