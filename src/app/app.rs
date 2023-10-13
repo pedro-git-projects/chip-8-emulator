@@ -15,7 +15,7 @@ pub struct App {
     sdl_context: sdl2::Sdl,
     video_subsystem: sdl2::VideoSubsystem,
     canvas: sdl2::render::Canvas<sdl2::video::Window>,
-    event_pump: sdl2::EventPump,
+    pub event_pump: sdl2::EventPump,
     is_running: bool,
     chip8: Chip8,
 }
