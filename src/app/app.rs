@@ -113,7 +113,6 @@ impl App {
             .chip8
             .memory_get_short(self.chip8.program_counter as usize);
         self.chip8.program_counter += 2;
-        println!("{:?}",opcode);
         self.chip8.exec(opcode);
     }
 
