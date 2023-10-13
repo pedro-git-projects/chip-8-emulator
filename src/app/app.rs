@@ -1,8 +1,15 @@
+use std::thread::sleep;
+use std::time::Duration;
+
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
 
 use crate::emulator::{keyboard::map_sdl_key_to_chip8_key, Chip8};
 
 use super::config::WindowConfig;
+
+const CHIP8_WIDTH: usize = 64;
+const CHIP8_HEIGHT: usize = 32;
+const CHIP8_WINDOW_MULTIPLIER: i32 = 10;
 
 pub struct App {
     sdl_context: sdl2::Sdl,
@@ -74,12 +81,32 @@ impl App {
     }
 
     pub fn render(&mut self) {
-        self.canvas.set_draw_color(Color::RGBA(0, 0, 0, 0));
-        self.canvas.clear();
-
-        self.canvas.set_draw_color(Color::RGBA(255, 255, 255, 0));
-        self.canvas.fill_rect(Rect::new(0, 0, 40, 40));
-
+        for x in 0..CHIP8_WIDTH {
+            for y in 0..CHIP8_HEIGHT {
+                if self.chip8.screen.is_set(x, y) {
+                    let r = Rect::new(
+                        x as i32 * CHIP8_WINDOW_MULTIPLIER,
+                        y as i32 * CHIP8_WINDOW_MULTIPLIER,
+                        CHIP8_WINDOW_MULTIPLIER as u32,
+                        CHIP8_WINDOW_MULTIPLIER as u32,
+                    );
+                    self.canvas.set_draw_color(Color::RGB(255, 255, 255));
+                    self.canvas.fill_rect(r).unwrap();
+                }
+            }
+        }
         self.canvas.present();
+
+        // Delay timer
+        if self.chip8.delay_timer > 0 {
+            sleep(Duration::from_millis(1));
+            self.chip8.delay_timer -= 1;
+        }
+
+        // Sound timer
+        if self.chip8.sound_timer > 0 {
+            sleep(Duration::from_millis(10 * self.chip8.sound_timer as u64));
+            self.chip8.sound_timer = 0;
+        }
     }
 }
