@@ -15,7 +15,7 @@ pub struct App {
     sdl_context: sdl2::Sdl,
     video_subsystem: sdl2::VideoSubsystem,
     canvas: sdl2::render::Canvas<sdl2::video::Window>,
-    event_pump: sdl2::EventPump,
+    pub event_pump: sdl2::EventPump,
     is_running: bool,
     chip8: Chip8,
 }
@@ -108,5 +108,18 @@ impl App {
             sleep(Duration::from_millis(10 * self.chip8.sound_timer as u64));
             self.chip8.sound_timer = 0;
         }
+
+        let opcode = self
+            .chip8
+            .memory_get_short(self.chip8.program_counter as usize);
+        self.chip8.program_counter += 2;
+        println!("{:?}",opcode);
+        self.chip8.exec(opcode);
+    }
+
+    pub fn load_rom(&mut self, filename: &str) -> Result<(), String> {
+        let rom_data = std::fs::read(filename).map_err(|err| err.to_string())?;
+        self.chip8.load(&rom_data).map_err(|err| err.to_string())?;
+        Ok(())
     }
 }
